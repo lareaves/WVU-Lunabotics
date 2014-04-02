@@ -1,7 +1,14 @@
 #include "particle.h"
 
 particle particle_sample_motion(particle parent, int dx, int dy, int dtheta) {
-  particle p = particle_sample_normal(parent);
+  particle p = parent;
+  p.x_var = pow(dx, 2);
+  p.y_var = pow(dy, 2);
+  p.theta_var = pow(dtheta, 2);
+  if (p.x_var < INITIAL_POSITION_VARIANCE) p.x_var = INITIAL_POSITION_VARIANCE;
+  if (p.y_var < INITIAL_POSITION_VARIANCE) p.y_var = INITIAL_POSITION_VARIANCE;
+  if (p.theta_var < INITIAL_ANGLE_VARIANCE) p.theta_var = INITIAL_ANGLE_VARIANCE;
+  p = particle_sample_normal(p);
   p.x += dx;
   p.y += dy;
   p.theta += dtheta;

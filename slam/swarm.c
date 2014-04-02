@@ -374,8 +374,8 @@ void swarm_update(int *distances) {
     s = sin(theta);
     c = cos(theta);
 
-    // check and record unseen every 1000 mm
-    for (l = 0; l < distance; l += 1000) {
+    // check and record unseen every 10 mm
+    for (l = 0; l < distance; l += 10) {
       x = l*c + best_particle.x;
       y = l*s + best_particle.y;
 
@@ -432,7 +432,7 @@ int swarm_get_best_theta_internal() {
 #ifdef LINUX
 int swarm_get_best_theta() {
 #endif
-  return best_particle.theta + 180;
+  return -1*(best_particle.theta + 180);
 }
 
 void swarm_get_best_buffer(uint8_t *buffer) {
