@@ -135,25 +135,32 @@ void swarm_init(int m_in, int degrees_in, int long_side_in, int short_side_in, i
   // draw initial border
   for (k = 0; k < long_side; k += BUFFER_FACTOR)
     for (j = 0; j < BORDER_WIDTH; j += BUFFER_FACTOR) {
-      landmark_set_seen_value(initial_map.map, buffer_index_from_x_y(k, j), 10000);
+      landmark_set_seen_value(initial_map.map, buffer_index_from_x_y(k - BORDER_WIDTH, j - BORDER_WIDTH), 100000);
+      landmark_set_unseen_value(initial_map.map, buffer_index_from_x_y(k - BORDER_WIDTH, j - BORDER_WIDTH), 0);
       landmark_set_seen_value(initial_map.map,
-			      buffer_index_from_x_y(k, short_side - 1 - j), 10000);
+			      buffer_index_from_x_y(k - BORDER_WIDTH, short_side - 1 - j), 100000);
+      landmark_set_unseen_value(initial_map.map,
+				buffer_index_from_x_y(k - BORDER_WIDTH, short_side - 1 - j), 0);
     }
 
   for (k = 0; k < short_side; k += BUFFER_FACTOR)
     for (j = 0; j < BORDER_WIDTH; j += BUFFER_FACTOR) {
-      landmark_set_seen_value(initial_map.map, buffer_index_from_x_y(j, k), 10000);
+      landmark_set_seen_value(initial_map.map, buffer_index_from_x_y(j - BORDER_WIDTH, k - BORDER_WIDTH), 100000);
+      landmark_set_unseen_value(initial_map.map, buffer_index_from_x_y(j - BORDER_WIDTH, k - BORDER_WIDTH), 0);
       landmark_set_seen_value(initial_map.map,
-			      buffer_index_from_x_y(long_side - 1 - j, k), 10000);
+			      buffer_index_from_x_y(long_side - 1 - j, k - BORDER_WIDTH), 100000);
+      landmark_set_unseen_value(initial_map.map,
+				buffer_index_from_x_y(long_side - 1 - j, k - BORDER_WIDTH), 0);
     }
 
   // initialize first round of particles
   x = start/2;
   for (i = 0; i < PARTICLE_COUNT; i++) {
     y = short_side/4;
-    if (rand_limit(2))
-      y *= 3;
-    theta = rand_limit(360) - 180;
+    //    if (rand_limit(2))
+    y *= 3;
+    //    theta = rand_limit(360) - 180;
+    theta = 180 + rand_limit(10) - 5;
     particles[i] = particle_init(x, y, theta);
     particles[i].map = initial_map.map;
     landmark_map_reference(particles[i].map);
@@ -175,8 +182,8 @@ void swarm_move(int dx, int dy, int dtheta) {
     p = particles[i];
 	do {
 		j++;
-      // ignore kinematics 40% of the time
-      if ((rand() / (double)RAND_MAX) < 0.6) {
+      // ignore kinematics 20% of the time
+      if ((rand() / (double)RAND_MAX) < 0.2) {
         // sample motion distribution
         particles[i] = particle_sample_motion(particles[i], dx, dy, dtheta);
 	  } else {
@@ -278,8 +285,8 @@ void swarm_update(int *distances) {
       s = sin(theta);
       c = cos(theta);
 
-      // check and record unseen every 1000 mm
-      for (l = 0; l < distance; l += 1000) {
+      // check unseen every 500 mm
+      for (l = 0; l < distance; l += 500) {
 	x = l*c + particles[i].x;
 	y = l*s + particles[i].y;
 
@@ -291,7 +298,7 @@ void swarm_update(int *distances) {
 	} else posterior += -log(0.05);
       }
 
-      // check and record seen
+      // check seen
       x = distance*c + particles[i].x;
       y = distance*s + particles[i].y;
 
@@ -365,6 +372,7 @@ void swarm_update(int *distances) {
   best_particle = previous_particles[0];
   best_particle.map = landmark_map_copy(best_particle.map);
 
+  /*
   // update map from best particle
   for (j = 0; j < m; j++) {
     distance = distances[j];
@@ -396,6 +404,7 @@ void swarm_update(int *distances) {
       landmark_set_seen(best_particle.map, k);
     }
   }
+  */
 
   // dereference previous particle maps
   for (i = 0; i < PARTICLE_COUNT; i++)

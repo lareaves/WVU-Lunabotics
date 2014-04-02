@@ -4,8 +4,8 @@
 #include "const.h"
 
 typedef struct landmark {
-  double x;
-  double y;
+  /*  double x;
+      double y;*/
   unsigned int seen;
   unsigned int unseen;
 } landmark;
