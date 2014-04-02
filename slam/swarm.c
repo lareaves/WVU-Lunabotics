@@ -365,6 +365,38 @@ void swarm_update(int *distances) {
   best_particle = previous_particles[0];
   best_particle.map = landmark_map_copy(best_particle.map);
 
+  // update map from best particle
+  for (j = 0; j < m; j++) {
+    distance = distances[j];
+    // forward is now 0 degrees, left -, right +
+    degrees = -1*(-sensor_degrees/2.0 + j*spacing);
+    theta = (degrees + best_particle.theta)*M_PI/180;
+    s = sin(theta);
+    c = cos(theta);
+
+    // check and record unseen every 1000 mm
+    for (l = 0; l < distance; l += 1000) {
+      x = l*c + best_particle.x;
+      y = l*s + best_particle.y;
+
+      // make sure it is in bounds
+      if (in_arena(x, y)) {
+	k = buffer_index_from_x_y(x, y);
+	landmark_set_unseen(best_particle.map, k);
+      }
+    }
+
+    // check and record seen
+    x = distance*c + best_particle.x;
+    y = distance*s + best_particle.y;
+
+    // make sure it is in bounds
+    if (in_arena(x, y)) {
+      k = buffer_index_from_x_y(x, y);
+      landmark_set_seen(best_particle.map, k);
+    }
+  }
+
   // dereference previous particle maps
   for (i = 0; i < PARTICLE_COUNT; i++)
     landmark_map_dereference(previous_particles[i].map);
